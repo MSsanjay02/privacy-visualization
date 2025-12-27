@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Website Privacy Visualizer",
+  "version": "0.1.0",
+  "description": "Visualize what data websites collect about you in real time.",
+  "permissions": [
+    "cookies",
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
