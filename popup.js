@@ -7,64 +7,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 1️⃣ Ask background to analyze the site
-  chrome.scripting.executeScript(
-    {
-      target: { tabId: tab.id },
-      func: collectPrivacyData
-    },
-    async (results) => {
-      if (chrome.runtime.lastError || !results?.[0]?.result) {
-        document.getElementById("result").textContent =
-          "Unable to analyze this site";
-        return;
-      }
+  const hostname = new URL(tab.url).hostname;
 
-      const { thirdPartyCount } = results[0].result;
-      const cookieCount = await getCookieCount(tab.url);
+  chrome.storage.session.get("privacy_" + hostname, async (data) => {
+    const info = data["privacy_" + hostname];
 
-      // 2️⃣ Risk logic (same as before)
-      let risk = "🟢 Safe";
-      let className = "safe";
-
-      const score = cookieCount * 1 + thirdPartyCount * 5;
-
-      if (score >= 40) {
-        risk = "🔴 Risky";
-        className = "risky";
-      } else if (score >= 15) {
-        risk = "🟡 Moderate";
-        className = "medium";
-      }
-
-      // 3️⃣ Render data (same snapshot as earlier)
-      document.getElementById("result").innerHTML = `
-        🍪 Cookies: ${cookieCount}<br/>
-        🌐 Third-Party Domains: ${thirdPartyCount}<br/>
-        <b class="${className}">Risk Level: ${risk}</b>
-      `;
+    if (!info) {
+      document.getElementById("result").textContent =
+        "Analyzing website… Please reload the page.";
+      return;
     }
-  );
-});
 
-function collectPrivacyData() {
-  const entries = performance.getEntriesByType("resource");
-  const pageDomain = location.hostname;
-  const thirdParty = new Set();
+    const cookieCount = await getCookieCount(tab.url);
 
-  entries.forEach(e => {
-    try {
-      const domain = new URL(e.name).hostname;
-      if (domain !== pageDomain && !domain.endsWith("." + pageDomain)) {
-        thirdParty.add(domain);
-      }
-    } catch {}
+    let className = "safe";
+    if (info.risk === "Moderate") className = "medium";
+    if (info.risk === "Risky") className = "risky";
+
+    document.getElementById("result").innerHTML = `
+      🍪 Cookies: ${cookieCount}<br/>
+      🌐 Third-Party Domains: ${info.thirdPartyCount}<br/>
+      <b class="${className}">Risk Level: ${info.risk}</b>
+    `;
   });
-
-  return {
-    thirdPartyCount: thirdParty.size
-  };
-}
+});
 
 function getCookieCount(url) {
   return new Promise(resolve => {
