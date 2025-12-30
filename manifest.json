@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Website Privacy Visualizer",
-  "version": "0.1.0",
-  "description": "Visualize what data websites collect about you in real time.",
+  "name": "Website Safety Signal",
+  "version": "1.0.0",
+  "description": "Shows website safety (Green / Yellow / Red) automatically when switching tabs.",
   "permissions": [
-    "cookies",
     "tabs",
-    "storage",
-    "scripting"
+    "cookies",
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "<all_urls>"
